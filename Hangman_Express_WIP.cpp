@@ -8,33 +8,32 @@
 #include <string.h>
 #include <Windows.h> 
 #include <time.h>
-#include <math.h>
+//#include <math.h>
 
-long sacapalabras (char fichero[], char palabra[]); // Saca una palabra aleatoria de un fichero .txt
+long sacapalabras (char fichero[], char palabra[],int longitud); // Saca una palabra aleatoria de un fichero .txt
+long diccionario (char fichero[], char palabra[],char definicion[]);
 long loadgame(char savefile[], int aux[]);
-long savegame(char savefile[], int win, int lose);
+long savegame(char savefile[], int win, int lose, int bestracha);
 int anticheats(char savefile[]);
 int banner();
+int minibanner();
+int mainmenu();
 int monigote(int Intentos); // Pinta el muñeco en base al numero de intentos restantes
 
-
-int main() // Void main()
+int main() 
 {
-	int i, x, player=1, cycle=1, ronda=0, status, correctas, intentos=10, aux[10], acierto, puntos1=0, puntos2=0;
-	char play='S', letra, menu, letras[20], palabra[25], tryword[25], nombre1[10], nombre2[10];
+	int i, x, player=1, cycle=1, ronda=0, status, correctas, intentos=10, aux[10], acierto, puntos1=0, puntos2=0, hardmode=0;
+	int racha=0, bestracha=0, longitud=5;
+	char play='S', letra, menu, letras[20], palabra[25], tryword[25], definicion[1024];// nombre1[10], nombre2[10];
 	char fich[]={'l','i','b','r','o','.','t','x','t','\0'};
 	char savefile[]={'s','a','v','e','g','a','m','e','.','t','x','t','\0'};
+	char rae[]={'R','A','E','.','t','x','t','\0'};
 
 	banner();
-	printf("                                                v3.12.95 'Estefi's Bday Update'\n\n");
-	printf("  \n");  
-	printf("  0 - Nueva partida \n");
-	printf("  1 - Continuar \n");
-	printf("  2 - Modo dificil: \n");
-	//printf("  X- NSFWmode -not implemented yet\n");	
+	mainmenu();
 
 while(cycle==1)
-{	printf("\n  >");
+{	printf("\n  > ");
 	fflush(stdin);
 	scanf("%c", &menu);		//almacena un caracter en la variable menu
 	menu=toupper(menu);  	//convierte en mayuscula el caracter almacenado en la variable "menu"
@@ -42,7 +41,6 @@ while(cycle==1)
 	switch (menu)			
 	{
 		case '0': //NEW GAME		  
-			
 			cycle=0;
 			break;			
 		case '1': //LOAD GAME
@@ -60,6 +58,7 @@ while(cycle==1)
 				loadgame(savefile, aux);
 				puntos1=aux[1];
 				puntos2=aux[2];
+				bestracha=aux[3];
 				anticheats(savefile);
 				cycle=0;
 			}
@@ -71,14 +70,44 @@ while(cycle==1)
 			}
 			break;
 		case '2':
-			printf("HARDMODE \n");
-			
+			hardmode=1;
+			minibanner();
+			printf("\n  MODO DIFICIL ACTIVADO. \n");
+			printf("  En este modo tienes 5 intentos en lugar de 10. \n");
+			printf("  Para desactivar este modo, sal del juego y vuelve a entrar. \n");
+			mainmenu();
+			break;
+			//fflush(stdin);
+		case '3':
+			printf("\n  SELECCION DE LONGITUD MINIMA. ");
+			printf("\n  Por defecto se establece en 5 caracteres. ");
+			printf("\n  Elige un numero entre 0 y 12 para cambiarlo. \n");
+			printf("\n  > ");
+			fflush(stdin);
+			fflush(stdin);
+			scanf("%i", &longitud);	
+			while( longitud > 12 )
+			{	
+				printf("\n  No te flipes... ");
+				printf("\n  Elige un numero entre 0 y 12");
+				printf("\n  > ");
+				fflush(stdin);
+				scanf("%i", &longitud);
+			}		
+			minibanner();
+			printf("\n  Longitud minima establecida en %i caracteres. ", longitud);
+			printf("\n"); 
+			mainmenu();
+			/*printf("  0 - Nueva partida \n");
+			printf("  1 - Continuar \n");*/	
 			break;			
 		case 'X':
 			printf("PORN MODE \n");
 			cycle=0;
-			break;		
+			break;	
+				
 			
+	
 		default:	// Entrara por esta opcion si el caracter introducido no es ninguno de los anteriores
 			printf("  Opcion no valida\n");
 			fflush(stdin);
@@ -88,10 +117,11 @@ while(cycle==1)
 // GAME START && RESET DE VARIABLES	
 while(play=='S')
 {	ronda++, intentos=10;  correctas=0;  letra='\0';   letras[0]='\0';  x=0;  
-	sacapalabras(fich,palabra);
-
+	sacapalabras(fich,palabra,longitud);
+	if(hardmode==1) {intentos=5;}
+	
 	fflush(stdin);
-	system("cls");	
+	//system("cls");	
 		
 	// MISC		
 	for (i=0 ; i<strlen(palabra) ; i++)	// Por cada letra que tenga la palabra oculta...
@@ -105,16 +135,26 @@ while(play=='S')
 		
 		// INTERFACE			
 		system("cls");
-		printf("\n  La palabra tiene %d letras. \t\t\t  Palabras acertadas: %d\n",strlen(palabra), puntos1);
-		printf("  Intentos Restantes: %d \t\t\t  Palabras falladas: %d\n",intentos, puntos2);	
-		printf("  Letras Probadas:");
-			for (i=0 ; i<x ; i++)	
-				printf("%c ",letras[i]); // pinta todas las letras que se han intentado
-		printf("\n\n  Palabra: %s  \n\n  ",tryword);  // pinta las letras descubiertas "E_EM_L_"
+		printf("\n ----PUNTUACION------------------");
+		printf("\n --------------------------------");
+		printf("\n  Palabras acertadas: %d",puntos1);
+		printf("\n  Mejor racha de aciertos: %d", bestracha);
+		printf("\n  Palabras falladas: %d",puntos2);
+		printf("\n  Aciertos consecutivos: %d",racha);		
+		printf("\n --------------------------------\n");
+		printf("\n  La palabra tiene %d letras.",strlen(palabra)); 
+		printf("\n  Intentos Restantes: %d \n",intentos);			
+		printf("\n  Letras Probadas:");
+		for (i=0 ; i<x ; i++)	
+			printf("%c ",letras[i]); // pinta todas las letras que se han intentado
+		//printf("> ");
+		printf("\n  Palabra: %s  \n\n",tryword);  // pinta las letras descubiertas "E_EM_L_"
 		monigote(intentos); // pinta el muñeco
-//		printf("La palabra es: '%s'",palabra);
+		
+		printf("\n  !!!LA PALABRA ES: '%s'",palabra);	//-------###--------> DEBUGGER <-------------###------------------##-------#---
 		fflush(stdin);
 		scanf("%c", &letra); // escanea la letra
+		letra=tolower(letra);
 		
 		// MAGIC HAPPENZ HERE	(Comprueba si hay coincidencias)
 		for (i=0 ; i<strlen(palabra) ; i++)
@@ -131,6 +171,8 @@ while(play=='S')
 	// GAME OVER		
 	if (intentos==0)
 	{	puntos2++;
+		if (racha>bestracha){bestracha=racha;}
+		racha=0;
 		system("cls");
 		//Sleep(500);
 		printf("\n  GAME ");
@@ -145,24 +187,29 @@ while(play=='S')
 		printf("  |  (|)   \n");
 		printf("  |  / \\   \n");
 		printf("  |_______\n\n  ");	
-		printf("La palabra era: '%s'",palabra);
+		printf("La palabra era: '%s'\n",palabra);
+		diccionario(rae,palabra,definicion);
 	}
 	
 	// WIN		
 	else 
 	{	puntos1++;
+		racha++;
+		if (racha>bestracha){bestracha=racha;}
 		system("cls");
-		printf("\n  PREMIO!!! Adivinaste '%s'", palabra);
+		printf(" ------------------------------------------------------------------------------");
+		printf("\n  ENHORABUENA!!! Adivinaste: '%s'\n", palabra);
+		diccionario(rae,palabra,definicion);
 		fflush(stdin);
 	}
 	
 	// PLAY AGAIN		
 
-	
+	printf(" ------------------------------------------------------------------------------"); 
 	printf("\n\n  Y ahora que...?:\n\n");  
 	printf("  X - Guardar y salir.\n");
 	printf("  S - Guardar y seguir jugando \n");
-	printf("\n  Pulsa Enter para seguir jugando\n  >");
+	printf("\n  Pulsa Enter para seguir jugando\n  > ");
 		
 	fflush(stdin);
 	scanf("%c", &menu);		//almacena un caracter en la variable menu
@@ -170,15 +217,15 @@ while(play=='S')
 	
 	switch (menu)			// crea un bucle, segun el caracter almacenado entrara por un case u otro
 	{
-	case 'x':			
+	//case 'x':			
 	case 'X': 	//save&exit
-		savegame(savefile, puntos1, puntos2);
+		savegame(savefile, puntos1, puntos2, bestracha);
 		anticheats(savefile);
 		exit(0);			
 		
-	case 's':
+	//case 's':
 	case 'S':	//save&play
-		savegame(savefile, puntos1, puntos2);
+		savegame(savefile, puntos1, puntos2, bestracha);
 		anticheats(savefile);
 		printf("\n\n  Recuerda que no es necesario guardar la partida en cada turno\n\n");
 		getch();
@@ -186,7 +233,7 @@ while(play=='S')
 
 		
 	default:	// Entrara por esta opcion si el caracter introducido no es ninguno de los anteriores
-	printf("\n\n  patata frita:\n\n");
+	//printf("\n\n  patata frita:\n\n");
 		break;
 	}	
 		//getch();   
@@ -198,37 +245,139 @@ while(play=='S')
 
 
 
-//---- FUNCIONES ----//
-long sacapalabras (char fichero[], char palabra[])
+//---- FUNCIONES ----//--------------//-----------------------//-----------------------//-----------------------//-----------------------
+int mainmenu()
+{
+	printf("  \n");  
+	printf("  0 - Nueva partida. \n");
+	printf("  1 - Continuar. \n");
+	printf("  2 - Activar modo dificil. \n");
+	printf("  3 - Establecer longitud minima de la palabra. \n");
+	//printf("  2 - Activar modo dificil: %i \n",longitud);
+	//printf("  X- NSFWmode -not implemented yet\n");	
+}
+
+//-----------------------
+long sacapalabras (char fichero[], char palabra[], int longitud)
 {
 	FILE *texto;	
 	long num_pal=0;	
-    int i, aux;
+    int i, ii=0, aux, x=0, multiplier;
     char ok='n';
 	srand(time(NULL));
 
     texto=fopen (fichero, "r");	
 
 	while ((fscanf(texto,"%s",palabra))!=EOF)
-		num_pal++;	// me da el numero de palabras del fichero, esta dentro del while
-
+	num_pal++;	// me da el numero de palabras del fichero, esta dentro del while
+	
 	rewind(texto);	
+	
+	//multiplier=num_pal/32767; // 32767 es el num maximo generado por el random
+	//aux=multiplier*rand();
+	//aux=multiplier*rand();	// si no esta dos veces no funciona, no se randomiza
+	//printf("RANDOM:%i",aux);
+	//getch();
 	aux=3*rand();	
 	aux=3*rand();	// si no esta dos veces no funciona, no se randomiza
 	
 	while(ok!='s')
-	{	for (i=0;i<aux;i++) 
+	{	//aux=rand();
+		//aux=3*rand();
+		//printf("RANDOM:%i",aux);
+		//getch();
+		for (i=0;i<aux;i++) 
 		{
 			fscanf(texto,"%s",palabra);
+			//printf("%s",palabra);
 		}
-		if(strlen(palabra)>=5)
-			for (i=0;i<=strlen(palabra);i++)
-				palabra[i]=tolower(palabra[i]);
-			ok='s';				
+		ii=ii+i;
+		//printf("\nIIIII:%i \n",ii);
+		//printf("NUMPALABRAS:%i \n",num_pal);
+		//getch();
+		if (ii>=num_pal) 
+		{ 
+			rewind(texto); 
+			ii=0;
+		}
+		else if(strlen(palabra)>=longitud)
+		{
+			for (i=0;i<=strlen(palabra);i++,x++)
+			{	//printf("III: %i\n",i);
+				//printf("XXX: %i\n",x);
+				if(palabra[i]==-61)
+				{ 
+				i++;
+				palabra[i]=164; 
+				}
+				palabra[x]=tolower(palabra[i]);
+				//printf("letra: %i\n",palabra[x]);
+			}	
+			ok='s';	
+		}
 	}
 	fclose (texto); 
 
-	return (num_pal);
+	//////return (num_pal);
+}
+//-----------------------
+long diccionario (char fichero[], char palabra[], char definicion[])
+{
+	FILE *texto;		
+    int i, equal=0, found=0, lines=0,aux=0;
+    int maxchars=1024;
+
+    texto=fopen (fichero, "r");	
+    while (fgets (definicion, maxchars, texto)!=NULL)
+	 { lines++;	}
+	 
+    rewind(texto); 
+    
+    while (fgets (definicion, maxchars, texto))		//Escanea lineas completas
+	{	aux++;
+	//printf("\n  aux: %i not found",aux);
+		/*printf("\n  Palabra: %s",palabra);
+		printf("\n  1st-Palabra: %c",palabra[0]);
+        printf("\n  Definicion: %s",definicion);
+        printf("\n  1st-Definicion: %c",definicion[0]);
+		getch();*/
+		if(palabra[0]==definicion[0])
+		{	
+			equal=0;
+			for(i=0;i<=strlen(palabra);i++)
+			{	
+				if(palabra[i]!=definicion[i]) {i=99;}
+				else if(palabra[i]==definicion[i])
+				{
+					equal++;
+					if(equal==strlen(palabra) )
+					{
+						if(definicion[i+1]==1 || definicion[i+1]==2 || definicion[i+1]==',' || definicion[i+1]=='.') 						
+						{
+							//printf("\n\n  ##########");
+							//printf("\n  RESULTADO");
+							//printf("\n  R-Palabra: %s",palabra);
+							printf("\n  Definicion: %s",definicion);
+							//printf("  ##########");
+							found=1;
+							aux=0;
+							//fclose (texto);
+						//	getch();
+						}
+					}
+				}
+			}				
+		}		
+	}
+	if(aux>=lines)	
+	{	//printf("\n  lines: %i ",lines);
+		//printf("\n  aux: %i ",aux);
+		//printf("\n  Lamentablemente, la palabra '%s' no ha sido encontrada en el diccionario integrado...",palabra);
+		printf("\n  Lamentablemente, no ha sido encontrada en el diccionario integrado...",palabra);
+		printf("\n  Pero seguro que Google si sabe su significado!\n");
+	}
+	//getch();
+    fclose (texto);
 }
 //-----------------------
 int anticheats(char savefile[])
@@ -314,7 +463,7 @@ int anticheats(char savefile[])
 	//return 0;
 }
 //-----------------------
-long loadgame(char savefile[],int aux[])
+long loadgame(char savefile[],int aux[]) // ESTO SE PUEDE HACER CON UN FOR EN LUGAR DE ELSE IF
 {
 	FILE *original;
     int i=0;
@@ -336,6 +485,10 @@ long loadgame(char savefile[],int aux[])
 			aux[i]=atoi(palabra);	// LOSES
 			//printf("lose: %i \n",lose);
 		}
+		else if (i==3) 	
+		{
+			aux[i]=atoi(palabra);	// winstreak
+		}
 //		else if (i==X) AQUI AÑADIMOS EL RESTO DE LINEAS A CARGAR DESDE EL SAVEGAME
 		i=i+1;
 }
@@ -345,7 +498,7 @@ long loadgame(char savefile[],int aux[])
 }
 
 //-----------------------
-long savegame(char savefile[], int win, int lose)
+long savegame(char savefile[], int win, int lose, int bestracha)
 {
 	FILE *original;
     int i;
@@ -358,6 +511,8 @@ long savegame(char savefile[], int win, int lose)
 	fprintf(original,"%d",win);
 	fputc(nl, original);
 	fprintf(original,"%d",lose);
+	fputc(nl, original);
+	fprintf(original,"%d",bestracha);
 	fputc(nl, original);
 	for(i=0;i<5;i++)
 	{	fputc(cabecera, original);}
@@ -376,11 +531,27 @@ int banner()
 		printf("  ##   ## ##   ## ##   #### ##    ## ##	  #   ## ##   ## ##   ####  |        	\n");
 		printf("  ##   ## ##   ## ##	### ######## ##       ## ##   ## ##    ###  |_________       \n");	
 		printf("################################################################################ \n");
+		printf("                                                         v3.12.95 'Estefi's Bday Update'\n\n");
 		//getch(); 			
 }		
 //-----------------------
+int minibanner()
+{	system("cls");
+	//printf("\n");
+	printf("\n  -=|HANGMAN EXPRESS|=-                            v3.12.95 'Estefi's Bday Update'\n\n");
+}
+//-----------------------
 int monigote(int Intentos)
 {
+if(Intentos==10)	
+{
+printf("            \n");
+printf("            \n");
+printf("            \n");
+printf("            \n");
+printf("            \n");
+printf("          \n\n  > ");
+}
 if(Intentos==9)	
 {
 printf("            \n");
@@ -428,7 +599,7 @@ printf("  |_______\n\n  > ");
 }	
 else if(Intentos==4)	
 {
-printf("_____       \n");
+printf("  _____       \n");
 printf("  |/        \n");	
 printf("  |         \n");
 printf("  |         \n");
@@ -437,7 +608,7 @@ printf("  |_______\n\n  > ");
 }
 else if(Intentos==3)	
 {
-printf("_____       \n");
+printf("  _____       \n");
 printf("  |/  |     \n");	
 printf("  |         \n");
 printf("  |         \n");
@@ -446,19 +617,19 @@ printf("  |_______\n\n  > ");
 }
 else if(Intentos==2)	
 {
-printf("_____       \n");
+printf("  _____       \n");
 printf("  |/  |     \n");	
-printf("  |  /O\\     \n");
+printf("  |  /O\\   \n");
 printf("  |         \n");
 printf("  |  	    \n");
 printf("  |_______\n\n  > ");	
 }
 else if(Intentos==1)	
 {
-printf("_____       \n");
+printf("  _____       \n");
 printf("  |/  |     \n");	
-printf("  |  /O\\     \n");
-printf("  |  (|)   \n");
+printf("  |  /O\\   \n");
+printf("  |  (|)    \n");
 printf("  |  	    \n");
 printf("  |_______\n\n  > ");
 }}

@@ -1,0 +1,63 @@
+#>01092022
+hotfix- ahora cicla todo el abecedario, no solo la A, pero es una chapuza temporal
+#>03092022
+un banner bien chingon, como los de metasploit
+#>04092022
+añadir un menu al principio 
+savegame
+Load game
+encriptar el savegame para que no se pueda trampear
+#>05092022
+newgame
+endgame menu:
+#>06092022
+aceptar mayusculas y minusculas
+modo dificil; intentos=5
+racha de aciertos
+reorganizar interfaz de puntos para meter las rachas de aciertos
+#>08092022
+la puta Ñ
+menu:establecer longitud minima palabra
+#>10092022
+descargar el diccionario RAE y volcarlo a un txt
+reformatear el puto diccionario, cropear y toda la pesca
+#>11092022
+
+
+----------------------------------------------------------------------------------------------------
+WIP
+putiferio zorrear mamada empotrar puticlub
+subir a git
+modo NSFW con una funcion paralela para sacar palabras de un array hardcoded
+
+buscar definiciones: scan primera letra palabra>scan diccionario, if primera letra de la linea != palabra; i++>if primera letra ==1ra letra palabra; scan palabra while char!= ',' o '.'> if palabra==palabra; read until /n and print
+plan B: funcion que indexa el diccionario y apunta en un array donde empieza cada letra para luego buscar mas rapido
+
+----------------------------------------------------------------------------------------------------
+PENDING:
+purgar diccionario
+
+
+
+añadir las palabras resueltas correctamente al savegame // txt auxiliar con el historico, se abre el fichero en modo apend, no write y se escribe sin mas, las acertadas y falladas se pueden separar tambien por #
+
+seccion oculta en el menu? con cheats?opciones ocultas? 69=activa modo NSFW // 
+
+multilibro, con un default[rae] y otros a parte; en el menu se hace un fich=default o lo que toque
+
+un dibujito mas tocho del ahorcado
+
+if modo dificil, puntos +2
+
+arreglar la chapuza de los random del sacapalabras
+
+modos de juego: aparte del NSFW, palabras raras con definicion, verbos, ingles, cosas de las que pueda conseguir diccionarios
+
+somehow añadir las definiciones de las palabras,
+ puede que la busqueda tarde asi que es una opcion del endmenu
+
+limpiar codigo y comentarios
+
+comprimir con contraseña cuando este llisto y mandarselo
+
+sacar conjugaciones y otras mierdas del diccionario
